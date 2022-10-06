@@ -5,6 +5,7 @@ from config.voc import Config
 from loss.loss import Loss
 from torch.utils.data import DataLoader
 
+import torch
 
 def train(cfg):
     train_ds = VOCDataset(cfg.root, mode=cfg.split, resize_size=cfg.resize_size)
@@ -13,7 +14,12 @@ def train(cfg):
 
     model = CenterNet(cfg)
     if cfg.gpu:
+        device = torch.device('cuda')
+
         model = model.cuda()
+        model = torch.nn.DataParallel(model,device_ids = [0,1,2])
+        model.to(device)
+
     loss_func = Loss(cfg)
 
     epoch = 100
